@@ -1,4 +1,6 @@
+import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/_index";
+import { useNavigate } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -8,9 +10,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   return (
     <div>
       hello world
+      <Button onClick={() => navigate("/auth/sign-in")}>login</Button>
     </div>
   );
 }

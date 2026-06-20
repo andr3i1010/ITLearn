@@ -8,6 +8,7 @@ import { passkey } from "@better-auth/passkey";
 export const auth = betterAuth({
   secret: env.SECRET,
   baseUrl: env.APP_BASE,
+  allowedOrigins: env.NODE_ENV === "production" ? [env.APP_BASE] : ["*"],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
