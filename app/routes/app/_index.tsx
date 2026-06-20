@@ -3,6 +3,7 @@ import type { Route } from "./+types/_index";
 import { auth } from "~/lib/auth/server";
 import { Button } from "~/components/ui/button";
 import { authClient } from "~/lib/auth/client";
+import { m } from "~/i18n/messages";
 
 export async function loader(loaderArgs: Route.LoaderArgs) {
   const session = await auth.api.getSession({
@@ -20,7 +21,9 @@ export default function Landing() {
   const navigate = useNavigate()
   return (
     <>
-      <p>You're signed in! Yay!</p>
+      <p>{m.example_message({
+        username: session.user.name || "unknown"
+      })}</p>
       <p>User info: {JSON.stringify(session.user)}</p>
       <p>Session info: {JSON.stringify(session.session)}</p>
       <Button onClick={async () => {

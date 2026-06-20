@@ -1,6 +1,20 @@
-import { useNavigate } from "react-router";
+import { redirect, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { authClient } from "~/lib/auth/client";
+import { auth } from "~/lib/auth/server";
+import type { Route } from "./+types/sign-up";
+
+export async function loader(loaderArgs: Route.LoaderArgs) {
+  const session = await auth.api.getSession({
+    headers: loaderArgs.request.headers,
+  })
+  if (session) {
+    return redirect("/app")
+  } else {
+    return { session }
+  }
+}
+
 
 export default function SignUp() {
   const navigate = useNavigate();

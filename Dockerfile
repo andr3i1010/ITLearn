@@ -1,22 +1,31 @@
-FROM node:24-alpine AS development-dependencies-env
-COPY . /app
+FROM node:20-alpine AS base
 WORKDIR /app
-RUN npm ci
+RUN apk add --no-cache openssl \
+  && corepack enable \
+  && corepack prepare pnpm@10.24.0 --activate
 
-FROM node:24-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
+FROM base AS development-dependencies-env
+COPY package.json pnpm-lock.yaml /app/
+RUN pnpm install
 
-FROM node:24-alpine AS build-env
+FROM base AS production-dependencies-env
+COPY package.json pnpm-lock.yaml /app/
+RUN pnpm install --prod
+
+FROM base AS build-env
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-RUN npm run build
+RUN ./node_modules/.bin/prisma generate
+RUN pnpm run build
 
-FROM node:24-alpine
-COPY ./package.json package-lock.json /app/
+FROM base
+ENV NODE_ENV=production
+COPY package.json pnpm-lock.yaml /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
-WORKDIR /app
-CMD ["npm", "run", "start"]
+COPY --from=build-env /app/app/prisma /app/app/prisma
+COPY prisma /app/prisma
+COPY prisma.config.ts docker-entrypoint.sh /app/
+RUN sed -i 's/\r$//' /app/docker-entrypoint.sh \
+  && chmod +x /app/docker-entrypoint.sh
+CMD ["/app/docker-entrypoint.sh"]
