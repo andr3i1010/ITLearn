@@ -6,7 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [
     paraglideVitePlugin({
-      project: './paraglide',
+      project: './paraglide.inlang',
       outdir: './app/i18n',
       strategy: ["url", "cookie", "preferredLanguage", "baseLocale"],
       urlPatterns: [
